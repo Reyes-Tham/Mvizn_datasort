@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1080.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Controller_HNCDS">
+   <children>
+      <HBox alignment="CENTER" prefHeight="60.0" prefWidth="1080.0" style="-fx-background-color: F4EBEB;">
+         <children>
+            <Label text="HNCDS">
+               <font>
+                  <Font name="Arial" size="20.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+      <VBox layoutY="60.0" prefHeight="625.0" prefWidth="200.0">
+         <children>
+            <Button mnemonicParsing="false" onMouseClicked="#onFileSelect" prefWidth="200.0" text="Select Root Folder" />
+            <ScrollPane prefHeight="605.0" prefWidth="200.0">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="605.0" prefWidth="200.0">
+                     <children>
+                        <TreeView fx:id="treeView" prefHeight="605.0" prefWidth="200.0" />
+                     </children>
+                  </AnchorPane>
+              </content>
+            </ScrollPane>
+         </children></VBox>
+      <VBox layoutX="200.0" layoutY="60.0" prefHeight="660.0" prefWidth="680.0">
+         <children>
+            <ImageView fitHeight="500.0" fitWidth="680.0" pickOnBounds="true" preserveRatio="true" />
+            <HBox alignment="CENTER" prefHeight="70.0" prefWidth="680.0" style="-fx-background-color: D9D9D9;">
+               <children>
+                  <ImageView fx:id="back" fitHeight="50.0" fitWidth="35.0" onMouseClicked="#onBack" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../Images/arrow-left.png" />
+                     </image>
+                  </ImageView>
+                  <VBox alignment="CENTER" maxHeight="70.0" maxWidth="610.0" minHeight="70.0" minWidth="610.0" prefHeight="70.0" prefWidth="610.0">
+                     <children>
+                        <Label fx:id="imageName" text="Label">
+                           <font>
+                              <Font size="25.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="imageNo" layoutX="31.0" layoutY="27.0" text="Label">
+                           <font>
+                              <Font size="25.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </VBox>
+                  <ImageView fx:id="forward" fitHeight="50.0" fitWidth="35.0" layoutX="333.0" layoutY="28.0" onMouseClicked="#onForward" pickOnBounds="true" preserveRatio="true" rotate="180.0">
+                     <image>
+                        <Image url="@../Images/arrow-left.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+               <children>
+                  <Label text="Zoom">
+                     <font>
+                        <Font name="Arial" size="20.0" />
+                     </font>
+                     <HBox.margin>
+                        <Insets right="10.0" />
+                     </HBox.margin>
+                  </Label>
+                  <Slider prefHeight="0.0" prefWidth="300.0">
+                     <cursor>
+                        <Cursor fx:constant="OPEN_HAND" />
+                     </cursor>
+                  </Slider>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+      <VBox layoutX="880.0" layoutY="60.0" prefHeight="660.0" prefWidth="200.0">
+         <children>
+            <Label alignment="CENTER" prefHeight="30.0" prefWidth="200.0" style="-fx-background-color: black;" text="Select Category" />
+            <ToggleButton fx:id="container" mnemonicParsing="false" prefHeight="60.0" prefWidth="200.0" text="container">
+               <toggleGroup>
+                  <ToggleGroup fx:id="category" />
+               </toggleGroup>
+            </ToggleButton>
+            <ToggleButton fx:id="crane" layoutX="10.0" layoutY="40.0" mnemonicParsing="false" prefHeight="60.0" prefWidth="200.0" text="crane" toggleGroup="$category" />
+            <ToggleButton fx:id="driver_in_cabin" layoutX="10.0" layoutY="100.0" mnemonicParsing="false" prefHeight="60.0" prefWidth="200.0" text="driver_in_cabin" toggleGroup="$category" />
+            <ToggleButton fx:id="fence" layoutX="10.0" layoutY="160.0" mnemonicParsing="false" prefHeight="60.0" prefWidth="200.0" text="fence" toggleGroup="$category" />
+            <ToggleButton fx:id="foreign_objects" layoutX="10.0" layoutY="220.0" mnemonicParsing="false" prefHeight="60.0" prefWidth="200.0" text="foreign_objects" toggleGroup="$category" />
+            <ToggleButton fx:id="opp_crane" layoutX="10.0" layoutY="280.0" mnemonicParsing="false" prefHeight="60.0" prefWidth="200.0" text="opp_crane" toggleGroup="$category" />
+            <ToggleButton fx:id="other_fpos" layoutX="10.0" layoutY="340.0" mnemonicParsing="false" prefHeight="60.0" prefWidth="200.0" text="other_fpos" toggleGroup="$category" />
+            <ToggleButton fx:id="reflection" layoutX="10.0" layoutY="400.0" mnemonicParsing="false" prefHeight="60.0" prefWidth="200.0" text="reflection" toggleGroup="$category" />
+            <ToggleButton fx:id="tpos" layoutX="10.0" layoutY="460.0" mnemonicParsing="false" prefHeight="60.0" prefWidth="200.0" text="tpos" toggleGroup="$category" />
+            <ToggleButton fx:id="vehicle" layoutX="10.0" layoutY="520.0" mnemonicParsing="false" prefHeight="60.0" prefWidth="200.0" text="vehicle" toggleGroup="$category" />
+            <Button fx:id="confirm" mnemonicParsing="false" onMouseClicked="#onConfirm" prefHeight="34.0" prefWidth="200.0" text="Confirm" />
+         </children>
+      </VBox>
+      <Button layoutY="685.0" mnemonicParsing="false" onMouseClicked="#onExport" prefHeight="35.0" prefWidth="200.0" text="Export" />
+   </children>
+</Pane>
