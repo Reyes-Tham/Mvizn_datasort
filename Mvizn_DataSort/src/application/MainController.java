@@ -27,7 +27,7 @@ public class MainController {
     void onHNCDS(MouseEvent event) {
     	try {
             // Load the FXML file
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("Screen_HNCDS.fxml")); // Replace with your FXML file path
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Screen_HNCDS.fxml")); 
             Pane loadedPane = loader.load();
 
             // Set the loadedPane as a child of screenBg

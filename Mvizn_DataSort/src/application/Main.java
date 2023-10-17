@@ -14,6 +14,12 @@ public class Main extends Application {
 			AnchorPane root = (AnchorPane)FXMLLoader.load(getClass().getResource("Main.fxml"));
 			Scene scene = new Scene(root,1280,720);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+			// Set the stage's title
+	        primaryStage.setTitle("Mvizn Data Sorting Application");
+
+	        // Make the window non-resizable
+	        primaryStage.setResizable(false);
+	        
 			primaryStage.setScene(scene);
 			primaryStage.show();
 		} catch(Exception e) {

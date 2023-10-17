@@ -1,22 +1,22 @@
 package application;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.Pane;
 
 public class Controller_itemList {
-
-	@FXML
+	private String Filename;
+	
+	public void setFilename(String filename) {
+		this.Filename = filename;
+		System.out.println(filename);
+	}
+	
+	public String getFilename() {
+		return this.Filename;
+	}
+    @FXML
     private ImageView checklist;
 
-    @FXML
-    private Label fileName;
-
-    
-    public void setFileName(String fileName) {
-    	this.fileName.setText(fileName);
-    }
 }
 
 
