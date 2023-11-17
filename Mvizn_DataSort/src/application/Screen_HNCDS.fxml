@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.geometry.Rectangle2D?>
-<?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.control.TreeView?>
@@ -15,11 +12,66 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<Pane fx:id="HNCDSpane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onKeyTyped="#onKeyPressed" prefHeight="720.0" prefWidth="1080.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Controller_HNCDS">
+<Pane fx:id="HNCDSpane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onKeyPressed="#onKeyPressed" onMouseMoved="#onMouseMoved" prefHeight="720.0" prefWidth="1080.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Controller_HNCDS">
    <children>
+      <StackPane layoutX="201.0" layoutY="59.0" prefHeight="660.0" prefWidth="680.0">
+         <children>
+            <VBox alignment="CENTER" prefHeight="660.0" prefWidth="680.0">
+               <children>
+                  <VBox alignment="CENTER" maxHeight="608.0" maxWidth="680.0" minHeight="500.0" minWidth="680.0" prefHeight="608.0" prefWidth="680.0">
+                     <children>
+                        <ImageView fx:id="imageScreen" fitHeight="500.0" fitWidth="680.0" onMouseClicked="#onClicked" onScroll="#onScroll" pickOnBounds="true" preserveRatio="true">
+                           <viewport>
+                              <Rectangle2D />
+                           </viewport>
+                        </ImageView>
+                     </children>
+                  </VBox>
+                  <HBox alignment="CENTER" prefHeight="70.0" prefWidth="680.0" style="-fx-background-color: D9D9D9;">
+                     <children>
+                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+                           <children>
+                              <ImageView fx:id="back" fitHeight="50.0" fitWidth="35.0" onMouseClicked="#onBack" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../Images/arrow-left.png" />
+                                 </image>
+                              </ImageView>
+                           </children>
+                        </VBox>
+                        <VBox alignment="CENTER" maxHeight="70.0" maxWidth="590.0" minHeight="100.0" minWidth="590.0" prefHeight="70.0" prefWidth="590.0">
+                           <children>
+                              <Label fx:id="imageName" text="Folder Name">
+                                 <font>
+                                    <Font size="25.0" />
+                                 </font>
+                              </Label>
+                              <Label fx:id="imageNo" layoutX="31.0" layoutY="27.0" text="0/0">
+                                 <font>
+                                    <Font size="25.0" />
+                                 </font>
+                              </Label>
+                              <Label fx:id="imageNo1" text="Keyboard Shortcuts: &quot;Z&quot;(Zoom), &quot;Q&quot;(Previous), &quot;E&quot;(Next)" />
+                           </children>
+                        </VBox>
+                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+                           <children>
+                              <ImageView fx:id="forward" fitHeight="50.0" fitWidth="35.0" onMouseClicked="#onForward" pickOnBounds="true" preserveRatio="true" rotate="180.0">
+                                 <image>
+                                    <Image url="@../Images/arrow-left.png" />
+                                 </image>
+                              </ImageView>
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+         </children>
+      </StackPane>
       <HBox alignment="CENTER" prefHeight="60.0" prefWidth="1080.0" style="-fx-background-color: F4EBEB;">
          <children>
             <Label text="HNCDS">
@@ -42,64 +94,6 @@
               </content>
             </ScrollPane>
          </children></VBox>
-      <VBox alignment="CENTER" layoutX="200.0" layoutY="60.0" prefHeight="660.0" prefWidth="680.0">
-         <children>
-            <VBox alignment="CENTER" maxHeight="500.0" maxWidth="680.0" minHeight="500.0" minWidth="680.0" prefHeight="500.0" prefWidth="680.0">
-               <children>
-                  <ImageView fx:id="imageScreen" fitHeight="500.0" fitWidth="680.0" pickOnBounds="true" preserveRatio="true">
-                     <viewport>
-                        <Rectangle2D />
-                     </viewport>
-                  </ImageView>
-               </children>
-            </VBox>
-            <HBox alignment="CENTER" prefHeight="70.0" prefWidth="680.0" style="-fx-background-color: D9D9D9;">
-               <children>
-                  <ImageView fx:id="back" fitHeight="50.0" fitWidth="35.0" onMouseClicked="#onBack" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@../Images/arrow-left.png" />
-                     </image>
-                  </ImageView>
-                  <VBox alignment="CENTER" maxHeight="70.0" maxWidth="610.0" minHeight="70.0" minWidth="610.0" prefHeight="70.0" prefWidth="610.0">
-                     <children>
-                        <Label fx:id="imageName" text="Label">
-                           <font>
-                              <Font size="25.0" />
-                           </font>
-                        </Label>
-                        <Label fx:id="imageNo" layoutX="31.0" layoutY="27.0" text="Label">
-                           <font>
-                              <Font size="25.0" />
-                           </font>
-                        </Label>
-                     </children>
-                  </VBox>
-                  <ImageView fx:id="forward" fitHeight="50.0" fitWidth="35.0" layoutX="333.0" layoutY="28.0" onMouseClicked="#onForward" pickOnBounds="true" preserveRatio="true" rotate="180.0">
-                     <image>
-                        <Image url="@../Images/arrow-left.png" />
-                     </image>
-                  </ImageView>
-               </children>
-            </HBox>
-            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
-               <children>
-                  <Label text="Zoom">
-                     <font>
-                        <Font name="Arial" size="20.0" />
-                     </font>
-                     <HBox.margin>
-                        <Insets right="10.0" />
-                     </HBox.margin>
-                  </Label>
-                  <Slider prefHeight="0.0" prefWidth="300.0">
-                     <cursor>
-                        <Cursor fx:constant="OPEN_HAND" />
-                     </cursor>
-                  </Slider>
-               </children>
-            </HBox>
-         </children>
-      </VBox>
       <VBox layoutX="880.0" layoutY="60.0" prefHeight="660.0" prefWidth="200.0">
          <children>
             <Label alignment="CENTER" prefHeight="30.0" prefWidth="200.0" style="-fx-background-color: black;" text="Select Category" />

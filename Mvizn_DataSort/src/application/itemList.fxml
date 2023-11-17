@@ -12,7 +12,7 @@
             <Image url="@../Images/checklist.png" />
          </image>
          <effect>
-            <ColorAdjust saturation="0.01" />
+            <ColorAdjust />
          </effect>
       </ImageView>
    </children>

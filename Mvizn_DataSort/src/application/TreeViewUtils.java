@@ -1,15 +1,12 @@
 package application;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
 
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.VBox;
+
 import javafx.util.Callback;
 
 public class TreeViewUtils {
@@ -21,6 +18,9 @@ public class TreeViewUtils {
 	    void resetCurrentIndex();
 	    
 	    void displayCurrentImage();
+	    
+	    void setImageDirectoryName(String name);
+
 	}
 	
     public static void displayFoldersInTree(File rootDirectory, TreeView<String> treeView, String catType, ImageDisplay controller, String rootDirectoryPath) {
@@ -47,6 +47,7 @@ public class TreeViewUtils {
                         setText(null);
                         setGraphic(null);
                     } else {
+                    	setStyle("-fx-background-color: lightgreen;");
                         setText(item);
                     }
                 }
@@ -57,7 +58,6 @@ public class TreeViewUtils {
                 if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && treeItem.isLeaf()) {
                     // Handle the double-click event for most sub-folders (non-leaf items)
                     String selectedItem = cell.getItem();
-                    System.out.println("Double-clicked on: " + selectedItem);
 
                     // Construct the full directory path by traversing the tree item hierarchy
                     String fullPath = rootDirectoryPath + File.separator;
@@ -69,7 +69,7 @@ public class TreeViewUtils {
                     while (parent != null) {
                     	if(!parent.getValue().equals(lastComponent)) {                       
                     		subPath=  parent.getValue() + File.separator + subPath;    
-                    		System.out.println(subPath);
+                    		//System.out.println(subPath);
                     	}
                     	parent = parent.getParent();                    
                     }               
@@ -80,9 +80,8 @@ public class TreeViewUtils {
                     
                     controller.setImageList(imageFiles);
                     controller.resetCurrentIndex();
-                    System.out.println(fullPath);
-
-                    System.out.println("Image Files in directory:");
+                    controller.setImageDirectoryName(selectedItem);
+                   
                     if (imageFiles != null) {
                         for (File imageFile : imageFiles) {
                             System.out.println(imageFile.getAbsolutePath());
@@ -90,7 +89,7 @@ public class TreeViewUtils {
 
                         if (imageFiles.length > 0) {
                             // Load and display the first image in the directory
-                            System.out.println("Displayed");
+                            //System.out.println("Displayed");
                             //File firstImage = imageFiles[0];
                             controller.displayCurrentImage();
                         }
@@ -99,9 +98,6 @@ public class TreeViewUtils {
                     }
                 }
             });
-
-
-
             return cell;
         };
 
@@ -125,21 +121,9 @@ public class TreeViewUtils {
     }
 
     private static TreeItem<String> createTreeItem(String fileName) {
-        try {
-        	System.out.println("builded");
-            FXMLLoader loader = new FXMLLoader(TreeViewUtils.class.getResource("itemList.fxml"));
-            VBox itemBox = loader.load();
-            TreeItem<String> treeItem = new TreeItem<>(fileName);
-            treeItem.setGraphic(itemBox);
+        TreeItem<String> treeItem = new TreeItem<>(fileName);
 
-            Controller_itemList controller = loader.getController();
-            controller.setFilename(fileName);
-
-            return treeItem;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        return treeItem;
     }
 
     private static boolean isImageFile(File file) {
