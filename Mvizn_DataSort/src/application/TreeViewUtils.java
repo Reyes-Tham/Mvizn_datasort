@@ -1,6 +1,7 @@
 package application;
 
 import java.io.File;
+import java.util.List;
 
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
@@ -47,7 +48,6 @@ public class TreeViewUtils {
                         setText(null);
                         setGraphic(null);
                     } else {
-                    	setStyle("-fx-background-color: lightgreen;");
                         setText(item);
                     }
                 }
@@ -69,7 +69,6 @@ public class TreeViewUtils {
                     while (parent != null) {
                     	if(!parent.getValue().equals(lastComponent)) {                       
                     		subPath=  parent.getValue() + File.separator + subPath;    
-                    		//System.out.println(subPath);
                     	}
                     	parent = parent.getParent();                    
                     }               
@@ -104,6 +103,71 @@ public class TreeViewUtils {
         treeView.setCellFactory(cellFactory);
         treeView.setRoot(rootNode);
     }
+    
+    
+    public static void updateTreeDisplay(TreeView<String> treeView, List<String> leafDirs, String rootDirectoryPath, ImageDisplay controller) {
+        treeView.setCellFactory(tv -> new TreeCell<String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                    setStyle(""); // Reset style for empty cells
+                } else {
+                    setText(item);
+
+                    // Check if the item (leafDir) is in the list
+                    TreeItem<String> treeItem = getTreeItem();
+                    if (treeItem != null && leafDirs.contains(item)) {
+                        setStyle("-fx-background-color: lightgreen;");
+                    } else {
+                        setStyle(""); // Reset style for cells not in the list
+                    }
+
+                    // Double-click event handling
+                    setOnMouseClicked(event -> {
+                        if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && treeItem.isLeaf()) {
+                            // Handle the double-click event
+                            String fullPath = buildFullPath(treeItem, rootDirectoryPath);
+                            File directory = new File(fullPath);
+                            File[] imageFiles = directory.listFiles(TreeViewUtils::isImageFile);
+
+                            controller.setImageList(imageFiles);
+                            controller.resetCurrentIndex();
+                            controller.setImageDirectoryName(treeItem.getValue());
+
+                            if (imageFiles != null && imageFiles.length > 0) {
+                                controller.displayCurrentImage();
+                            } else {
+                                System.out.println("No image files found in the directory.");
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    private static String buildFullPath(TreeItem<String> treeItem, String rootDirectoryPath) {
+        String fullPath = rootDirectoryPath + File.separator;
+        String lastComponent = new File(rootDirectoryPath).getName();
+        String subPath = "";
+
+        TreeItem<String> parent = treeItem.getParent();
+        while (parent != null) {
+            if (!parent.getValue().equals(lastComponent)) {
+                subPath = parent.getValue() + File.separator + subPath;
+            }
+            parent = parent.getParent();
+        }
+        return fullPath + subPath + treeItem.getValue();
+    }
+
+
+
+
 
     public static void buildTree(File directory, TreeItem<String> node) {
         if (directory.isDirectory()) {

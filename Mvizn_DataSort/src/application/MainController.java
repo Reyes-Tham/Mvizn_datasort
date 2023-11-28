@@ -7,7 +7,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 
 public class MainController {
-
     @FXML
     private Button CLPS;
 
@@ -32,6 +31,7 @@ public class MainController {
 
             // Set the loadedPane as a child of screenBg
             screenBg.getChildren().setAll(loadedPane);
+            
         } catch (Exception e) {
             e.printStackTrace();
         }

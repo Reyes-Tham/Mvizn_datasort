@@ -2,15 +2,24 @@ package application;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.sql.Blob;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 import javax.sql.rowset.serial.SerialBlob;
 
 import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+
 
 
 import application.TreeViewUtils.ImageDisplay;
@@ -43,13 +52,13 @@ public class Controller_HNCDS implements ImageDisplay{
 	DatabaseConnection connection;
 	
 	
-	
 	//-------------------------------------------------------------------------------------------------------------------------------------
 	//TreeViewUtils Variables
 	private File[] imageFiles; 
     private int currentImageIndex;
     private String imageDirectoryName;
     private String rootDirectoryName;
+    private File selectedDirectoryName;
     
     
     
@@ -65,11 +74,10 @@ public class Controller_HNCDS implements ImageDisplay{
     //-------------------------------------------------------------------------------------------------------------------------------------
     //Initializing Controller
     public Controller_HNCDS() {
-
+    	
 	}
     
     public void initialize() {
-    	System.out.println("Init");
         HNCDSpane.requestFocus();
         connection = new DatabaseConnection();
         connection.connect();
@@ -155,6 +163,10 @@ public class Controller_HNCDS implements ImageDisplay{
             ToggleButton selectedButton = (ToggleButton) selectedToggle;
             String toggleName = selectedButton.getText();
             insertData("hncds_leaf", toggleName);
+            
+            //Checklist feature, updates Tree Display whenever onConfirm
+            TreeViewUtils.updateTreeDisplay(treeView, getAllLeafDirs(),rootDirectoryName,this);
+            
         } else {
             System.out.println("No toggle button selected.");
         }
@@ -162,7 +174,25 @@ public class Controller_HNCDS implements ImageDisplay{
 
     @FXML
     void onExport(MouseEvent event) {
-    	//TODO Get List of leafDir, put in respective category folders
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Select Export Root Folder");
+
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        File selectedDirectory = directoryChooser.showDialog(stage);
+
+        if (selectedDirectory != null) {
+            // Fetch imageDataList from the database
+            List<ImageData> imageDataList = connection.fetchImageData("hncds_leaf");
+
+            // Prepare the hncds subfolder
+            File hncdsFolder = new File(selectedDirectory, "hncds");
+            if (!hncdsFolder.exists()) {
+                hncdsFolder.mkdir();
+            }
+
+            // Export images into respective category folders
+            exportImagesToCategories(hncdsFolder, imageDataList);
+        }
     }
     
     @FXML
@@ -172,7 +202,10 @@ public class Controller_HNCDS implements ImageDisplay{
         // Create a DirectoryChooser to select the root folder
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Select Root Folder");
-
+        
+        //Delete data from database
+        connection.deleteAllData("hncds_leaf");
+        
         // Show the directory chooser dialog
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         java.io.File selectedDirectory = directoryChooser.showDialog(stage);
@@ -194,10 +227,8 @@ public class Controller_HNCDS implements ImageDisplay{
     	if(this.imageFiles!=null) {
     		if (code == KeyCode.Q) {
 				backwards();
-				System.out.println("b");
 			} else if (code == KeyCode.E) {
 				forwards();
-				System.out.println("f");
 			} else if (code == KeyCode.Z) {
 				System.out.println("Zooming Tool");
 				toggleMagnification();
@@ -285,10 +316,26 @@ public class Controller_HNCDS implements ImageDisplay{
         }
     }
     
+    private void writeBlobToFile(Blob blob, File file) {
+        try (InputStream in = blob.getBinaryStream();
+             OutputStream out = new FileOutputStream(file)) {
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = in.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
+            }
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    
     private void insertData(String table,String cat) {
     	Blob image = convertImageToBlob(imageScreen.getImage());
-    	Object[] data = new Object[] {rootDirectoryName,image,imageDirectoryName,cat};
-    	connection.insertData(table, new String[]{"rootDir","image","leafDir","category"}, data);
+    	
+    	//TODO query if imageDirectoryName exists, if exists replace instead of insert.
+    	Object[] data = new Object[] {rootDirectoryName,imageName.getText(),image,imageDirectoryName,cat};
+    	connection.insertData(table, new String[]{"rootDir","imageName","image","leafDir","category"}, data);
     }
     
     
@@ -309,7 +356,10 @@ public class Controller_HNCDS implements ImageDisplay{
     
     public void setRootDirectoryName(String name) {
     	this.rootDirectoryName = name;
-    	System.out.println("This item has root..."+rootDirectoryName);
+    }
+    
+    public void setSelectedDirectoryPath(File file) {
+    	this.selectedDirectoryName = file;
     }
     
     
@@ -360,8 +410,68 @@ public class Controller_HNCDS implements ImageDisplay{
         magnifiedView.setX(mouseX-captureSize);
         magnifiedView.setY(mouseY-captureSize);
     }
+    
+    
+    
+    //-------------------------------------------------------------------------------------------------------------------------------------
+    private List<String> getAllLeafDirs(){
+    	List<String> leafDirs = connection.getAllDataByColumn("hncds_leaf", "leafDir");
+    	return leafDirs;
+    }
+    
+    private void exportImagesToCategories(File hncdsFolder, List<ImageData> imageDataList) {
+        for (ImageData data : imageDataList) {
+            File categoryFolder = new File(hncdsFolder, data.getCategory());
+            if (!categoryFolder.exists()) {
+                categoryFolder.mkdirs();
+            }
 
+            File outputFile = new File(categoryFolder, data.getImageName());
+            writeBlobToFile(data.getImage(), outputFile);
+        }
+    }
 
+    
+    
+    //-------------------------------------------------------------------------------------------------------------------------------------
+    //Image Class
+    public static class ImageData{
+    	private Blob image;
+    	private String imageName;
+    	private String category;
+    	
+    	//Constructors and Setters
+    	public ImageData(String name, String cat, Blob image) {
+    		this.imageName = name;
+    		this.category = cat;
+    		this.image = image;
+    	}
+    	
+    	public void setImage(Blob image) {
+    		this.image = image;
+    	}
+    	
+    	public Blob getImage() {
+    		return this.image;
+    	}
+    	
+    	public void setImageName(String name) {
+    		this.imageName = name;
+    	}
+    	
+    	public String getImageName() {
+    		return this.imageName;
+    	}
+    	
+    	public void setCategory(String cat) {
+    		this.category = cat;
+    	}
+    	
+    	public String getCategory() {
+    		return this.category;
+    	}
+    }
+    
 
 }
 
