@@ -10,6 +10,9 @@ import javafx.scene.input.MouseButton;
 
 import javafx.util.Callback;
 
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+
 public class TreeViewUtils {
 	public interface ImageDisplay {
 	    void loadAndDisplayImage(File imageFile);
@@ -24,19 +27,30 @@ public class TreeViewUtils {
 
 	}
 	
-    public static void displayFoldersInTree(File rootDirectory, TreeView<String> treeView, String catType, ImageDisplay controller, String rootDirectoryPath) {
-        TreeItem<String> rootNode = new TreeItem<>(rootDirectory.getName());
-        File[] subdirectories = rootDirectory.listFiles(File::isDirectory);
+	public static void displayFoldersInTree(File rootDirectory, TreeView<String> treeView, String catType, ImageDisplay controller, String rootDirectoryPath) {
+	    TreeItem<String> rootNode = new TreeItem<>(rootDirectory.getName());
+	    File[] subdirectories = rootDirectory.listFiles(File::isDirectory);
 
-        if (subdirectories != null) {
-            for (File category : subdirectories) {
-                if (catType.equals(category.getName())) {
-                    TreeItem<String> categoryNode = new TreeItem<>(category.getName());
-                    buildTree(category, categoryNode);
-                    rootNode.getChildren().add(categoryNode);
-                }
-            }
-        }
+	    boolean catTypeFound = false; // Flag to check if catType directory is found
+
+	    if (subdirectories != null) {
+	        for (File category : subdirectories) {
+	            if (catType.equals(category.getName())) {
+	                TreeItem<String> categoryNode = new TreeItem<>(category.getName());
+	                buildTree(category, categoryNode);
+	                rootNode.getChildren().add(categoryNode);
+	                catTypeFound = true; // Set flag to true as catType is found
+	            }
+	        }
+	    }
+
+	    if (!catTypeFound) { // If catType directory is not found, show alert
+	        Alert alert = new Alert(AlertType.INFORMATION);
+	        alert.setTitle("Wrong Root Folder!");
+	        alert.setHeaderText(null);
+	        alert.setContentText("Please select a medialog folder with " + catType + " folder!");
+	        alert.showAndWait();
+	    }
 
         Callback<TreeView<String>, TreeCell<String>> cellFactory = param -> {
             TreeCell<String> cell = new TreeCell<String>() {
@@ -83,7 +97,7 @@ public class TreeViewUtils {
                    
                     if (imageFiles != null) {
                         for (File imageFile : imageFiles) {
-                            System.out.println(imageFile.getAbsolutePath());
+                            //System.out.println(imageFile.getAbsolutePath());
                         }
 
                         if (imageFiles.length > 0) {

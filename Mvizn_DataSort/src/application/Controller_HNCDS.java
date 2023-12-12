@@ -44,6 +44,8 @@ import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.scene.SnapshotParameters;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 
 
 public class Controller_HNCDS implements ImageDisplay{
@@ -80,9 +82,23 @@ public class Controller_HNCDS implements ImageDisplay{
     public void initialize() {
         HNCDSpane.requestFocus();
         connection = new DatabaseConnection();
-        connection.connect();
+        connect();
     }
     
+    
+    public void connect() {
+    	if(connection == null) {
+    		connection = new DatabaseConnection();
+    	}
+    	connection.connect();
+    }
+    
+    public void disconnect() {
+        if (connection != null) {
+        	connection.deleteAllData("hncds_leaf");
+            connection.disconnect();
+        }
+    }
     
     
     //-------------------------------------------------------------------------------------------------------------------------------------
@@ -192,6 +208,13 @@ public class Controller_HNCDS implements ImageDisplay{
 
             // Export images into respective category folders
             exportImagesToCategories(hncdsFolder, imageDataList);
+            
+            // Alert Success
+            String successString = "Export Successfully to: "+selectedDirectory.toString();
+            showAlert("Export Success", successString);
+            
+            //Delete data from database
+            connection.deleteAllData("hncds_leaf");
         }
     }
     
@@ -334,8 +357,13 @@ public class Controller_HNCDS implements ImageDisplay{
     	Blob image = convertImageToBlob(imageScreen.getImage());
     	
     	//TODO query if imageDirectoryName exists, if exists replace instead of insert.
-    	Object[] data = new Object[] {rootDirectoryName,imageName.getText(),image,imageDirectoryName,cat};
-    	connection.insertData(table, new String[]{"rootDir","imageName","image","leafDir","category"}, data);
+    	if(!connection.valueExists(table, "leafDir", imageDirectoryName)) {
+    		Object[] data = new Object[] {rootDirectoryName,imageName.getText(),image,imageDirectoryName,cat};
+        	connection.insertData(table, new String[]{"rootDir","imageName","image","leafDir","category"}, data);
+    	}else {
+    		Object[] data = new Object[] {rootDirectoryName, imageName.getText(), image, cat};
+    		connection.updateData(table, new String[]{"rootDir", "imageName", "image", "category"}, data, "leafDir", imageDirectoryName);
+    	}
     }
     
     
@@ -433,46 +461,17 @@ public class Controller_HNCDS implements ImageDisplay{
 
     
     
-    //-------------------------------------------------------------------------------------------------------------------------------------
-    //Image Class
-    public static class ImageData{
-    	private Blob image;
-    	private String imageName;
-    	private String category;
-    	
-    	//Constructors and Setters
-    	public ImageData(String name, String cat, Blob image) {
-    		this.imageName = name;
-    		this.category = cat;
-    		this.image = image;
-    	}
-    	
-    	public void setImage(Blob image) {
-    		this.image = image;
-    	}
-    	
-    	public Blob getImage() {
-    		return this.image;
-    	}
-    	
-    	public void setImageName(String name) {
-    		this.imageName = name;
-    	}
-    	
-    	public String getImageName() {
-    		return this.imageName;
-    	}
-    	
-    	public void setCategory(String cat) {
-    		this.category = cat;
-    	}
-    	
-    	public String getCategory() {
-    		return this.category;
-    	}
-    }
     
-
+    //-------------------------------------------------------------------------------------------------------------------------------------
+    //Alert Method
+    private void showAlert(String title, String name) {
+    	Alert alert = new Alert(AlertType.INFORMATION);
+    	alert.setTitle(title);
+    	alert.setHeaderText(null);
+    	alert.setContentText(name);
+    	
+    	alert.showAndWait();
+    }
 }
 
 
