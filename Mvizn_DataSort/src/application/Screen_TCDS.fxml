@@ -83,7 +83,8 @@
       </HBox>
       <VBox layoutY="60.0" prefHeight="625.0" prefWidth="200.0">
          <children>
-            <Button mnemonicParsing="false" onMouseClicked="#onFileSelect" prefWidth="200.0" text="Select Root Folder" />
+            <Button fx:id="performanceSelectButton" mnemonicParsing="false" onMouseClicked="#onPerformanceSelect" prefWidth="200.0" text="Select Performance Folder" />
+            <Button fx:id="fileSelectButton" mnemonicParsing="false" onMouseClicked="#onFileSelect" prefWidth="200.0" text="Select Medialog Folder" />
             <ScrollPane prefHeight="605.0" prefWidth="200.0">
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="605.0" prefWidth="200.0">
@@ -96,7 +97,7 @@
          </children></VBox>
       <VBox layoutX="880.0" layoutY="60.0" prefHeight="660.0" prefWidth="200.0">
          <children>
-            <Label alignment="CENTER" prefHeight="30.0" prefWidth="200.0" style="-fx-background-color: black;" text="Select Category" />
+            <Label alignment="CENTER" prefHeight="30.0" prefWidth="200.0" style="-fx-background-color: black;" text="Select Category" textFill="WHITE" />
             <ToggleButton fx:id="blurry" mnemonicParsing="false" prefHeight="60.0" prefWidth="200.0" text="blurry">
                <toggleGroup>
                   <ToggleGroup fx:id="category" />
@@ -110,6 +111,6 @@
             <Button fx:id="confirm" mnemonicParsing="false" onMouseClicked="#onConfirm" prefHeight="34.0" prefWidth="200.0" text="Confirm" />
          </children>
       </VBox>
-      <Button layoutY="685.0" mnemonicParsing="false" onMouseClicked="#onExport" prefHeight="35.0" prefWidth="200.0" text="Export" />
+      <Button fx:id="exportButton" layoutY="685.0" mnemonicParsing="false" onMouseClicked="#onExport" prefHeight="35.0" prefWidth="200.0" text="Export" />
    </children>
 </Pane>

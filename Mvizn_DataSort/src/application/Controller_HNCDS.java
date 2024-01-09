@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
 import java.sql.Blob;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +53,13 @@ public class Controller_HNCDS implements ImageDisplay{
 	DatabaseConnection connection;
 	
 	
+	
+	//-------------------------------------------------------------------------------------------------------------------------------------
+	//Other Variables
+	private File performanceDirectory;
+	
+	
+	
 	//-------------------------------------------------------------------------------------------------------------------------------------
 	//TreeViewUtils Variables
 	private File[] imageFiles; 
@@ -80,6 +89,13 @@ public class Controller_HNCDS implements ImageDisplay{
         HNCDSpane.requestFocus();
         connection = new DatabaseConnection();
         connect();
+        
+        // Initially disable the onFileSelect and export button
+        fileSelectButton.setDisable(true);
+        fileSelectButton.setOpacity(0.5); // Adjust opacity to visually indicate it's disabled
+        
+        exportButton.setDisable(true);
+        exportButton.setOpacity(0.5);
         
         //Init tooltip
         for (Toggle toggle : category.getToggles()) {
@@ -186,6 +202,15 @@ public class Controller_HNCDS implements ImageDisplay{
 
     @FXML
     private Button confirm;
+    
+    @FXML
+    private Button exportButton;
+    
+    @FXML
+    private Button fileSelectButton;
+
+    @FXML
+    private Button performanceSelectButton;
 
     @FXML
     private ToggleButton container;
@@ -267,14 +292,20 @@ public class Controller_HNCDS implements ImageDisplay{
         directoryChooser.setTitle("Select Export Root Folder");
 
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        File selectedDirectory = directoryChooser.showDialog(stage);
+        File selectedDirectory = performanceDirectory;
 
         if (selectedDirectory != null) {
             // Fetch imageDataList from the database
             List<ImageData> imageDataList = connection.fetchImageData("hncds_leaf");
-
-            // Prepare the hncds subfolder
+            
             File hncdsFolder = new File(selectedDirectory, "hncds");
+            
+            // Delete existing images
+            if (hncdsFolder.exists() && hncdsFolder.isDirectory()) {
+                deleteImagesInFolder(hncdsFolder);
+            }
+            
+            // Prepare the hncds subfolder
             if (!hncdsFolder.exists()) {
                 hncdsFolder.mkdir();
             }
@@ -287,7 +318,27 @@ public class Controller_HNCDS implements ImageDisplay{
             showAlert("Export Success", successString);
             
             //Delete data from database
-            connection.deleteAllData("hncds_leaf");
+            //connection.deleteAllData("hncds_leaf");
+        }
+    }
+    
+    @FXML
+    void onPerformanceSelect(MouseEvent event) {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Select Performance Root Folder");
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        File selectedPerformanceDirectory = directoryChooser.showDialog(stage);
+
+        if (selectedPerformanceDirectory != null) {
+            performanceDirectory = selectedPerformanceDirectory;
+
+            // Extract the folder name and set it as the button text
+            String folderName = selectedPerformanceDirectory.getName();
+            performanceSelectButton.setText(folderName);
+            
+            // Enable the onFileSelect button
+            fileSelectButton.setDisable(false);
+            fileSelectButton.setOpacity(1.0); // Reset opacity to indicate it's enabled
         }
     }
     
@@ -309,9 +360,29 @@ public class Controller_HNCDS implements ImageDisplay{
         if (selectedDirectory != null) {   
         	//Get absolute root directory
         	String rootDirectoryPath = selectedDirectory.getAbsolutePath();
+        	
+        	// Extract the folder name and set it as the button text
+            String folderName = selectedDirectory.getName();
+            fileSelectButton.setText(folderName);
+        	
             // Use the utility method from TreeViewUtils to populate the TreeView
             TreeViewUtils.displayFoldersInTree(selectedDirectory, treeView, "hncds", this, rootDirectoryPath);
             setRootDirectoryName(rootDirectoryPath);
+            
+            exportButton.setDisable(false);
+            exportButton.setOpacity(1.0);
+            
+            performanceSelectButton.setDisable(true);
+            performanceSelectButton.setOpacity(0.5);
+            
+            try {
+                processPerformanceFolder(performanceDirectory, "hncds", selectedDirectory);
+                TreeViewUtils.updateTreeDisplay(treeView, getAllLeafDirs(), rootDirectoryName, this);
+                System.out.println("UpdatedDisplay");
+            } catch (IOException | SQLException e) {
+            	showAlert("Data Inconsistency Detected", "Data in performance folder is not present in \nmedialogs folder. Please ensure correct folders are selected.");
+                System.out.println("Alert shown");
+            }
         }
     }
     
@@ -440,7 +511,19 @@ public class Controller_HNCDS implements ImageDisplay{
     }
     
     
-    
+    private void deleteImagesInFolder(File folder) {
+        File[] files = folder.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isFile()) {
+                    file.delete(); // Deletes each file
+                } else if (file.isDirectory()) {
+                    deleteImagesInFolder(file); // Recursively delete files in subdirectories
+                }
+            }
+        }
+    }
+
     //-------------------------------------------------------------------------------------------------------------------------------------
     //TreeViewsUtils -- Utility Methods (Sets Images, DirectoryName, etc.)
     public void setImageList(File[] imageFiles) {
@@ -464,13 +547,17 @@ public class Controller_HNCDS implements ImageDisplay{
     }
     
     public void checkSelectedDirectory() {
-    	if(connection.valueExists("hncds_leaf", "leafDir", imageDirectoryName)) {
-    		String cat = (String) connection.getDataByColumn("hncds_leaf", "category", "leafDir", imageDirectoryName);
-    		changeToggleText(cat);
-    	}else {
-    		resetToggleText();
-    	}
+        // Reset all toggle buttons to their default style
+        resetToggleText();
+
+        // Check if the current directory exists in the database
+        if (connection.valueExists("hncds_leaf", "leafDir", imageDirectoryName)) {
+            String cat = (String) connection.getDataByColumn("hncds_leaf", "category", "leafDir", imageDirectoryName);
+            // Change the text color of the associated toggle button
+            changeToggleText(cat);
+        }
     }
+
     
     
     
@@ -563,6 +650,97 @@ public class Controller_HNCDS implements ImageDisplay{
     }
     
     
+    
+    //-------------------------------------------------------------------------------------------------------------------------------------
+    //Checking performance folder methods
+    private static final String[] IMAGE_EXTENSIONS = new String[] { "png", "jpg", "jpeg", "bmp", "gif" };
+
+    private boolean isImageFile(File file) {
+        String fileName = file.getName().toLowerCase();
+        return Arrays.stream(IMAGE_EXTENSIONS).anyMatch(fileName::endsWith);
+    }
+    
+    private void processPerformanceFolder(File baseDir, String selectedSubfolder, File medialogDir) throws IOException, SQLException {
+        // Path to the selected subfolder (e.g., HNCDS)
+        File selectedDir = new File(baseDir, selectedSubfolder);
+
+        // Check if the selected directory exists and is a directory
+        if (!selectedDir.isDirectory()) {
+            System.out.println("Selected directory does not exist: " + selectedDir);
+            return;
+        }
+
+        // Iterate over the category directories inside the selected subfolder
+        File[] categoryDirs = selectedDir.listFiles(File::isDirectory);
+        if (categoryDirs != null) {
+            for (File categoryDir : categoryDirs) {
+                String categoryName = categoryDir.getName(); // Category name like "TPOS"
+
+                // Process each image in the category directory
+                File[] images = categoryDir.listFiles(this::isImageFile);
+                if (images != null) {
+                    for (File image : images) {
+                        String imageName = image.getName(); // Image file name
+                        Blob imageBlob = convertFileToBlob(image); // Convert image to Blob
+
+                        String timestamp = getTimestampFromMedialog(image, medialogDir);
+                        if(timestamp!=null) {
+                        	// Insert data into the database
+                            Object[] data = new Object[] {selectedSubfolder, imageName, imageBlob, timestamp, categoryName};
+                            connection.insertData("hncds_leaf", new String[]{"rootDir", "imageName", "image", "leafDir", "category"}, data);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private String getTimestampFromMedialog(File imageFile, File medialogDir) {
+        String desiredFileName = imageFile.getName();
+
+        File[] subDirs = medialogDir.listFiles(File::isDirectory);
+        if (subDirs != null) {
+            for (File subDir : subDirs) {
+                String timestamp = searchForFileInDirectory(desiredFileName, subDir);
+                if (timestamp != null) {
+                    return timestamp;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private String searchForFileInDirectory(String fileName, File directory) {
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    // Recursive call to search inside the subdirectory
+                    String foundTimestamp = searchForFileInDirectory(fileName, file);
+                    if (foundTimestamp != null) {
+                        return foundTimestamp;
+                    }
+                } else if (file.isFile() && file.getName().equals(fileName)) {
+                    // Return the name of the parent directory when file is found
+                    return directory.getName();
+                }
+            }
+        }
+
+        // File not found in this directory or any of its subdirectories
+        return null;
+    }
+
+    
+    private Blob convertFileToBlob(File file) throws IOException, SQLException {
+        // Read the file into a byte array
+        byte[] fileContent = Files.readAllBytes(file.toPath());
+
+        // Create a Blob object from the byte array
+        return new SerialBlob(fileContent);
+    }
+
     
     //-------------------------------------------------------------------------------------------------------------------------------------
     //Alert Method
