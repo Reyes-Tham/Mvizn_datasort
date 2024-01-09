@@ -9,7 +9,9 @@ import java.net.MalformedURLException;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +33,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeView;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
@@ -43,6 +46,7 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -84,8 +88,51 @@ public class Controller_TCDS implements ImageDisplay{
         HNCDSpane.requestFocus();
         connection = new DatabaseConnection();
         connect();
+        
+        //Init tooltip
+        for (Toggle toggle : category.getToggles()) {
+        	if(toggle instanceof ToggleButton) {
+        		ToggleButton toggleButton = (ToggleButton) toggle;
+        		attachHoverListener(toggleButton);
+        	}   	
+        }
     }
     
+    private Map<String, ToolTipData> initializeToolTipData() {
+        Map<String, ToolTipData> contentMap = new HashMap<>();
+
+        // Add content for "tpos" category
+        Image tposImage = new Image("file:src/Images/TCDS/tpos.jpeg");
+        String tposDescription = "For images where there is an actual twist lock still attached \nto the container. ";
+        contentMap.put("TCDStpos", new ToolTipData(tposImage, tposDescription));
+
+        // Add content for "TCDSblurry" category
+        Image blurryImage = new Image("file:src/Images/TCDS/blurry.jpeg");
+        String blurryDescription = "For images that appear blurry or the detected bit is part of the background"; 
+        contentMap.put("TCDSblurry", new ToolTipData(blurryImage, blurryDescription));
+
+        // Add content for "TCDSforeign_objects" category
+        Image foreignObjectsImage = new Image("file:src/Images/TCDS/foreign_objects.jpeg");
+        String foreignObjectsDescription = "For images where the detected object is a random thing \nstuck to the corner of the container like a plastic bag or leaves."; 
+        contentMap.put("TCDSforeign_objects", new ToolTipData(foreignObjectsImage, foreignObjectsDescription));
+
+        // Add content for "TCDSglare" category
+        Image glareImage = new Image("file:src/Images/TCDS/glare.jpeg");
+        String glareDescription = "For images that show a bright spot on the underside of the corner \nmostly due to the lights being switched on in the background. \nOccurs mostly at night."; 
+        contentMap.put("TCDSglare", new ToolTipData(glareImage, glareDescription));
+
+        // Add content for "TCDSother_fpos" category
+        Image otherFposImage = new Image("file:src/Images/TCDS/other_fpos.jpeg");
+        String otherFposDescription = "For images that don't fit any other categories"; 
+        contentMap.put("TCDSother_fpos", new ToolTipData(otherFposImage, otherFposDescription));
+
+        // Add content for "TCDSstray" category
+        Image strayImage = new Image("file:src/Images/TCDS/stray.jpg");
+        String strayDescription = "For images that shows the camera pointing elsewhere example being \nthe background not being the sky therefore being \na \"stray angle\""; 
+        contentMap.put("TCDSstray", new ToolTipData(strayImage, strayDescription));
+
+        return contentMap;
+    }
     
     public void connect() {
     	if(connection == null) {
@@ -184,6 +231,10 @@ public class Controller_TCDS implements ImageDisplay{
             //Checklist feature, updates Tree Display whenever onConfirm
             TreeViewUtils.updateTreeDisplay(treeView, getAllLeafDirs(),rootDirectoryName,this);
             
+            //Update the Toggle Buttons
+            resetToggleText();
+            changeToggleText(toggleName);
+                
         } else {
             System.out.println("No toggle button selected.");
         }
@@ -330,7 +381,7 @@ public class Controller_TCDS implements ImageDisplay{
 
             // Convert BufferedImage to byte array
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            ImageIO.write(bufferedImage, "png", byteArrayOutputStream);
+            ImageIO.write(bufferedImage, "jpg", byteArrayOutputStream);
             byte[] imageData = byteArrayOutputStream.toByteArray();
 
             return new SerialBlob(imageData);
@@ -391,7 +442,14 @@ public class Controller_TCDS implements ImageDisplay{
     	this.selectedDirectoryName = file;
     }
     
-    
+    public void checkSelectedDirectory() {
+    	if(connection.valueExists("hncds_leaf", "leafDir", imageDirectoryName)) {
+    		String cat = (String) connection.getDataByColumn("hncds_leaf", "category", "leafDir", imageDirectoryName);
+    		changeToggleText(cat);
+    	}else {
+    		resetToggleText();
+    	}
+    }
     
     //-------------------------------------------------------------------------------------------------------------------------------------
     //Magnification Function -- Magnify Image (Using screenshot and increasing size of screenshots)
@@ -443,6 +501,7 @@ public class Controller_TCDS implements ImageDisplay{
     
     
     //-------------------------------------------------------------------------------------------------------------------------------------
+    //Other methods
     private List<String> getAllLeafDirs(){
     	List<String> leafDirs = connection.getAllDataByColumn(tableName, "leafDir");
     	return leafDirs;
@@ -460,6 +519,26 @@ public class Controller_TCDS implements ImageDisplay{
         }
     }
 
+    private void changeToggleText(String cat) {
+    	for(Toggle toggle:category.getToggles()) {
+			if(toggle instanceof ToggleButton) {
+				ToggleButton toggleButton = (ToggleButton) toggle;
+				if(toggleButton.getText().equals(cat)) {
+					toggleButton.setStyle("-fx-text-fill: blue; -fx-font-weight: bold; -fx-font-size: 20;");
+				}
+			}
+		}
+    }
+    
+    private void resetToggleText() {
+    	for(Toggle toggle:category.getToggles()) {
+			if(toggle instanceof ToggleButton) {
+				ToggleButton toggleButton = (ToggleButton) toggle;
+				toggleButton.setStyle("-fx-text-fill: black; -fx-font-weight: normal; -fx-font-size: 12;");
+			}
+		}
+    }
+    
     
     
     //-------------------------------------------------------------------------------------------------------------------------------------
@@ -472,6 +551,40 @@ public class Controller_TCDS implements ImageDisplay{
     	
     	alert.showAndWait();
     }
+    
+    //-------------------------------------------------------------------------------------------------------------------------------------
+    //Tool tip Methods
+    private void attachHoverListener(ToggleButton toggleButton) {
+        Map<String, ToolTipData> tooltipContentMap = initializeToolTipData();
+
+        toggleButton.setOnMouseEntered(event -> {
+            String category = "TCDS"+toggleButton.getText();
+            ToolTipData content = tooltipContentMap.get(category);
+
+            if (content != null) {
+                Tooltip tooltip = new Tooltip(content.getDescription());
+
+                // Setting a custom graphic (image) in the tooltip
+                ImageView imageView = new ImageView(content.getImage());
+                imageView.setFitHeight(250); // Set preferred size
+                imageView.setFitWidth(250);
+                tooltip.setGraphic(imageView);
+
+                // Set the tooltip text style
+                tooltip.setStyle("-fx-font-size: 16px;");
+                
+                // Assign the tooltip to the ToggleButton
+                toggleButton.setTooltip(tooltip);
+                tooltip.setShowDelay(Duration.millis(500)); 
+
+            }
+        });
+
+        toggleButton.setOnMouseExited(event -> {
+            toggleButton.setTooltip(null);
+        });
+    }
+
 }
 
 

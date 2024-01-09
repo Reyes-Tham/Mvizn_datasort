@@ -1,38 +1,37 @@
 package application;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.sql.Blob;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.sql.rowset.serial.SerialBlob;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-
-
-
 import application.TreeViewUtils.ImageDisplay;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
+import javafx.scene.SnapshotParameters;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeView;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
@@ -43,9 +42,7 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
-import javafx.scene.SnapshotParameters;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
+import javafx.util.Duration;
 
 
 public class Controller_HNCDS implements ImageDisplay{
@@ -83,8 +80,80 @@ public class Controller_HNCDS implements ImageDisplay{
         HNCDSpane.requestFocus();
         connection = new DatabaseConnection();
         connect();
+        
+        //Init tooltip
+        for (Toggle toggle : category.getToggles()) {
+        	if(toggle instanceof ToggleButton) {
+        		ToggleButton toggleButton = (ToggleButton) toggle;
+        		attachHoverListener(toggleButton);
+        	}   	
+        }
     }
     
+    private Map<String, ToolTipData> initializeToolTipData() {
+        Map<String, ToolTipData> contentMap = new HashMap<>();
+
+        // Add content for "tpos" category
+        Image tposImage = new Image("file:src/Images/HNCDS/tpos.jpeg");
+        String tposDescription = "When the system detects any person(s) outside of a vehicle even if partially, i.e., arm \r\n"
+        		+ "or head sticking out.";
+        contentMap.put("tpos", new ToolTipData(tposImage, tposDescription));
+
+        // Add content for "container" category
+        Image containerImage = new Image("file:src/Images/HNCDS/container.jpeg");
+        String containerDescription = "occurs when the detected object is any part of the container";
+        contentMap.put("container", new ToolTipData(containerImage, containerDescription));
+
+        // Add content for "crane" category
+        Image craneImage = new Image("file:src/Images/HNCDS/crane.jpeg");
+        String craneDescription = "occurs when the detected object is any part of the crane";
+        contentMap.put("crane", new ToolTipData(craneImage, craneDescription));
+
+        // Add content for "driver_in_cabin" category
+        Image driverInCabinImage = new Image("file:src/Images/HNCDS/driver_in_cabin.jpeg");
+        String driverInCabinDescription = "occurs when the system detects the driver inside the cabin with no body \r\n"
+        		+ "part sticking out (no hand or head and no opened doors or windows)";
+        contentMap.put("driver_in_cabin", new ToolTipData(driverInCabinImage, driverInCabinDescription));
+        
+        // Add content for "fence" category
+        Image fenceImage = new Image("file:src/Images/HNCDS/fence.jpeg");
+        String fenceDescription = "occurs when the detected object is specifically the yellow and black striped fencing \r\n"
+        		+ "pole at the sides of the road, usually seen beside the vehicle";
+        contentMap.put("fence", new ToolTipData(fenceImage, fenceDescription));
+
+        // Add content for "foreign_objects" category
+        Image foreignObjectsImage = new Image("file:src/Images/HNCDS/foreign_objects.jpeg");
+        String foreignObjectsDescription = "occurs when the detected object is of other things like plastic bags, birds, \r\n"
+        		+ "road curbs, random helmet on the road, etc that do not fall into other categories except for \r\n"
+        		+ "other_fpos\r\n"
+        		+ "";
+        contentMap.put("foreign_objects", new ToolTipData(foreignObjectsImage, foreignObjectsDescription));
+
+        // Add content for "opp_crane" category
+        Image oppCraneImage = new Image("file:src/Images/HNCDS/opp_crane.jpeg");
+        String oppCraneDescription = "occurs when the detected object belongs to the other side of the road, relative \r\n"
+        		+ "to the point of view from the camera on the working crane";
+        contentMap.put("opp_crane", new ToolTipData(oppCraneImage, oppCraneDescription));
+
+        // Add content for "other_fpos" category
+        Image otherFposImage = new Image("file:src/Images/HNCDS/other_fpos.jpeg");
+        String otherFposDescription = "occurs when the detected object does not belong to any of the other categories \r\n"
+        		+ "stated here";
+        contentMap.put("other_fpos", new ToolTipData(otherFposImage, otherFposDescription));
+
+        // Add content for "reflection" category
+        Image reflectionImage = new Image("file:src/Images/HNCDS/reflection.jpeg");
+        String reflectionDescription = " occurs when the detected object is specifically a patch of oil/water on the road";
+        contentMap.put("reflection", new ToolTipData(reflectionImage, reflectionDescription));
+
+        // Add content for "vehicle" category
+        Image vehicleImage = new Image("file:src/Images/HNCDS/vehicle.jpeg");
+        String vehicleDescription = "occurs when the detected object is any part of the vehicle";
+        contentMap.put("vehicle", new ToolTipData(vehicleImage, vehicleDescription));
+
+
+        return contentMap;
+    }
     
     public void connect() {
     	if(connection == null) {
@@ -182,6 +251,10 @@ public class Controller_HNCDS implements ImageDisplay{
             
             //Checklist feature, updates Tree Display whenever onConfirm
             TreeViewUtils.updateTreeDisplay(treeView, getAllLeafDirs(),rootDirectoryName,this);
+            
+            //Update the Toggle Buttons
+            resetToggleText();
+            changeToggleText(toggleName);
             
         } else {
             System.out.println("No toggle button selected.");
@@ -329,7 +402,7 @@ public class Controller_HNCDS implements ImageDisplay{
 
             // Convert BufferedImage to byte array
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            ImageIO.write(bufferedImage, "png", byteArrayOutputStream);
+            ImageIO.write(bufferedImage, "jpg", byteArrayOutputStream);
             byte[] imageData = byteArrayOutputStream.toByteArray();
 
             return new SerialBlob(imageData);
@@ -390,6 +463,15 @@ public class Controller_HNCDS implements ImageDisplay{
     	this.selectedDirectoryName = file;
     }
     
+    public void checkSelectedDirectory() {
+    	if(connection.valueExists("hncds_leaf", "leafDir", imageDirectoryName)) {
+    		String cat = (String) connection.getDataByColumn("hncds_leaf", "category", "leafDir", imageDirectoryName);
+    		changeToggleText(cat);
+    	}else {
+    		resetToggleText();
+    	}
+    }
+    
     
     
     //-------------------------------------------------------------------------------------------------------------------------------------
@@ -442,6 +524,7 @@ public class Controller_HNCDS implements ImageDisplay{
     
     
     //-------------------------------------------------------------------------------------------------------------------------------------
+    //Other methods
     private List<String> getAllLeafDirs(){
     	List<String> leafDirs = connection.getAllDataByColumn("hncds_leaf", "leafDir");
     	return leafDirs;
@@ -459,6 +542,25 @@ public class Controller_HNCDS implements ImageDisplay{
         }
     }
 
+    private void changeToggleText(String cat) {
+    	for(Toggle toggle:category.getToggles()) {
+			if(toggle instanceof ToggleButton) {
+				ToggleButton toggleButton = (ToggleButton) toggle;
+				if(toggleButton.getText().equals(cat)) {
+					toggleButton.setStyle("-fx-text-fill: blue; -fx-font-weight: bold; -fx-font-size: 20;");
+				}
+			}
+		}
+    }
+    
+    private void resetToggleText() {
+    	for(Toggle toggle:category.getToggles()) {
+			if(toggle instanceof ToggleButton) {
+				ToggleButton toggleButton = (ToggleButton) toggle;
+				toggleButton.setStyle("-fx-text-fill: black; -fx-font-weight: normal; -fx-font-size: 12;");
+			}
+		}
+    }
     
     
     
@@ -472,6 +574,40 @@ public class Controller_HNCDS implements ImageDisplay{
     	
     	alert.showAndWait();
     }
+    
+    //-------------------------------------------------------------------------------------------------------------------------------------
+    //Tool tip Methods
+    private void attachHoverListener(ToggleButton toggleButton) {
+        Map<String, ToolTipData> tooltipContentMap = initializeToolTipData();
+
+        toggleButton.setOnMouseEntered(event -> {
+            String category = toggleButton.getText();
+            ToolTipData content = tooltipContentMap.get(category);
+
+            if (content != null) {
+                Tooltip tooltip = new Tooltip(content.getDescription());
+
+                // Setting a custom graphic (image) in the tooltip
+                ImageView imageView = new ImageView(content.getImage());
+                imageView.setFitHeight(250); // Set preferred size
+                imageView.setFitWidth(250);
+                tooltip.setGraphic(imageView);
+
+                // Set the tooltip text style
+                tooltip.setStyle("-fx-font-size: 16px;");
+                
+                // Assign the tooltip to the ToggleButton
+                toggleButton.setTooltip(tooltip);
+                tooltip.setShowDelay(Duration.millis(500)); 
+
+            }
+        });
+
+        toggleButton.setOnMouseExited(event -> {
+            toggleButton.setTooltip(null);
+        });
+    }
+
 }
 
 

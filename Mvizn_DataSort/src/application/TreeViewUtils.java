@@ -24,6 +24,8 @@ public class TreeViewUtils {
 	    void displayCurrentImage();
 	    
 	    void setImageDirectoryName(String name);
+	    
+	    void checkSelectedDirectory();
 
 	}
 	
@@ -154,6 +156,7 @@ public class TreeViewUtils {
 
                             if (imageFiles != null && imageFiles.length > 0) {
                                 controller.displayCurrentImage();
+                                controller.checkSelectedDirectory();
                             } else {
                                 System.out.println("No image files found in the directory.");
                             }

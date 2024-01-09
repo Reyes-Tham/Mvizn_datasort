@@ -58,9 +58,9 @@
                         <VBox prefWidth="200.0">
                            <children>
                               <Button fx:id="HNCDS" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onMouseClicked="#onHNCDS" prefHeight="60.0" prefWidth="200.0" text="HNCDS" />
-                              <Button fx:id="CLPS" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onMouseClicked="#onCLPS" prefHeight="60.0" prefWidth="200.0" text="CLPS" />
-                              <Button fx:id="PMNRS" layoutX="10.0" layoutY="70.0" mnemonicParsing="false" prefHeight="60.0" prefWidth="200.0" text="PMNRS" />
                               <Button fx:id="TCDS" layoutX="10.0" layoutY="130.0" mnemonicParsing="false" onMouseClicked="#onTCDS" prefHeight="60.0" prefWidth="200.0" text="TCDS" />
+                              <Button fx:id="Guide" mnemonicParsing="false" onMouseClicked="#onGuide" prefHeight="60.0" prefWidth="200.0" text="Application Guide" />
+                              <Button fx:id="More" mnemonicParsing="false" onMouseClicked="#onMore" prefHeight="60.0" prefWidth="200.0" text="More" />
                            </children>
                         </VBox>
                      </children>

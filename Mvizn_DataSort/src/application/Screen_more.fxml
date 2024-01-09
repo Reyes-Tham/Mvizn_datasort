@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<Pane fx:id="HNCDSpane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onKeyPressed="#onKeyPressed" onMouseMoved="#onMouseMoved" prefHeight="720.0" prefWidth="1080.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Controller_more">
+   <children>
+      <HBox alignment="CENTER" prefHeight="60.0" prefWidth="1080.0" style="-fx-background-color: F4EBEB;">
+         <children>
+            <Label text="More">
+               <font>
+                  <Font name="Arial" size="20.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+      <VBox alignment="CENTER" layoutY="60.0" prefHeight="661.0" prefWidth="1080.0">
+         <children>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Dear interns, for additional guide you may press the link below. Thank you!">
+               <font>
+                  <Font size="20.0" />
+               </font>
+            </Text>
+            <Hyperlink fx:id="hyperlink" onAction="#openLink" text="https://seanbriannarciso.wixsite.com/mvizninternguide">
+               <font>
+                  <Font size="20.0" />
+               </font></Hyperlink>
+            <HBox alignment="TOP_CENTER" prefHeight="100.0" prefWidth="200.0">
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Password: Mvizn123">
+                     <font>
+                        <Font size="20.0" />
+                     </font>
+                     <HBox.margin>
+                        <Insets right="5.0" />
+                     </HBox.margin>
+                  </Text>
+                  <VBox prefHeight="200.0" prefWidth="100.0">
+                     <children>
+                        <Pane prefHeight="14.0" prefWidth="100.0" />
+                        <Text fill="#0040ff" onMouseClicked="#onCopy" strokeType="OUTSIDE" strokeWidth="0.0" text="copy" wrappingWidth="30.435546875" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </children>
+</Pane>

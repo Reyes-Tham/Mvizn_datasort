@@ -10,20 +10,18 @@ public class MainController {
 	private Controller_HNCDS currentHNCDSController;
 	
 	private Controller_TCDS currentTCDSController;
-	
-	private Controller_CLPS currentCLPSController;
-	
-    @FXML
-    private Button CLPS;
-
+		
     @FXML
     private Button HNCDS;
 
     @FXML
-    private Button PMNRS;
-
-    @FXML
     private Button TCDS;
+    
+    @FXML
+    private Button Guide;
+    
+    @FXML
+    private Button More;
 
     @FXML
     private Pane screenBg;
@@ -74,20 +72,21 @@ public class MainController {
         }
     }
     
+  
     @FXML
-    void onCLPS(MouseEvent event) {
+    void onGuide(MouseEvent event) {
+
+    }
+
+
+    @FXML
+    void onMore(MouseEvent event) {
     	try {
         	switchScreen();
-        	
-            // If already on CLPS screen, return
-            if (currentCLPSController != null) return;
 
             // Load the FXML file
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("Screen_CLPS.fxml")); 
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Screen_MORE.fxml")); 
             Pane loadedPane = loader.load();
-
-            // Get the controller
-            currentCLPSController = loader.getController();
 
             // Set the loadedPane as a child of screenBg
             screenBg.getChildren().setAll(loadedPane);
@@ -96,7 +95,6 @@ public class MainController {
             e.printStackTrace();
         }
     }
-
     
     public void switchScreen() {
     	//Disconnect from all controllers
@@ -108,12 +106,7 @@ public class MainController {
         if (currentTCDSController != null) {
             currentTCDSController.disconnect();
             currentTCDSController = null;
-        }
-        
-        if (currentCLPSController != null) {
-            currentCLPSController.disconnect();
-            currentCLPSController = null;
-        }
+        }     
     }
 
 }

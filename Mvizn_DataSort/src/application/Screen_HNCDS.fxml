@@ -96,7 +96,7 @@
          </children></VBox>
       <VBox layoutX="880.0" layoutY="60.0" prefHeight="660.0" prefWidth="200.0">
          <children>
-            <Label alignment="CENTER" prefHeight="30.0" prefWidth="200.0" style="-fx-background-color: black;" text="Select Category" />
+            <Label alignment="CENTER" prefHeight="30.0" prefWidth="200.0" style="-fx-background-color: black;" text="Select Category" textFill="#f5f5f5" />
             <ToggleButton fx:id="container" mnemonicParsing="false" prefHeight="60.0" prefWidth="200.0" text="container">
                <toggleGroup>
                   <ToggleGroup fx:id="category" />
