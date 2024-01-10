@@ -10,6 +10,8 @@ public class MainController {
 	private Controller_HNCDS currentHNCDSController;
 	
 	private Controller_TCDS currentTCDSController;
+	
+	private Controller_guide currentGuideController;
 		
     @FXML
     private Button HNCDS;
@@ -75,8 +77,20 @@ public class MainController {
   
     @FXML
     void onGuide(MouseEvent event) {
+        try {
+            switchScreen();
 
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Screen_guide.fxml")); 
+            Pane loadedPane = loader.load();
+
+            currentGuideController = loader.getController();
+            screenBg.getChildren().setAll(loadedPane);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
 
 
     @FXML
@@ -85,7 +99,7 @@ public class MainController {
         	switchScreen();
 
             // Load the FXML file
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("Screen_MORE.fxml")); 
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Screen_more.fxml")); 
             Pane loadedPane = loader.load();
 
             // Set the loadedPane as a child of screenBg
@@ -107,6 +121,11 @@ public class MainController {
             currentTCDSController.disconnect();
             currentTCDSController = null;
         }     
+        
+        if (currentGuideController != null) {
+            currentGuideController.stopVideo();
+            currentGuideController = null;
+        }
     }
 
 }
